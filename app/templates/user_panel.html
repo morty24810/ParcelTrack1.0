@@ -1,0 +1,27 @@
+{% extends "base.html" %}
+{% block body %}
+<h3 class="mb-3">我的包裹</h3>
+
+<div class="d-flex gap-2 mb-3">
+  <a href="{{ url_for('html.logout') }}" class="btn btn-danger">登出</a>
+  <a href="{{ url_for('html.home') }}"   class="btn btn-outline-secondary">返回首页</a>
+</div>
+
+<table class="table table-bordered align-middle">
+  <thead>
+    <tr><th>单号</th><th>收件人</th><th>状态</th><th>取件码</th></tr>
+  </thead>
+  <tbody>
+    {% for p in pkgs %}
+      <tr>
+        <td>{{ p.code }}</td>
+        <td>{{ p.recipient }}</td>
+        <td>{{ p.status }}</td>
+        <td>{{ p.pickup_code }}</td>
+      </tr>
+    {% else %}
+      <tr><td colspan="4" class="text-center">暂无包裹</td></tr>
+    {% endfor %}
+  </tbody>
+</table>
+{% endblock %}

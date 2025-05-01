@@ -1,0 +1,16 @@
+{% extends "base.html" %}
+{% block body %}
+<h4 class="mb-3">无需登录取件</h4>
+<form method="post" class="row g-2">
+  <div class="col"><input name="code"  placeholder="单号" class="form-control" required></div>
+  <div class="col"><input name="pickup" placeholder="取件码" class="form-control" required></div>
+  <div class="col"><button class="btn btn-primary w-100">取件</button></div>
+</form>
+
+{% if msg %}
+  <p class="mt-3">{{ msg }}</p>
+{% endif %}
+
+<!-- 返回首页按钮 -->
+<a class="btn btn-secondary mt-3" href="{{ url_for('html.home') }}">返回首页</a>
+{% endblock %}

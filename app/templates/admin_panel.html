@@ -1,0 +1,86 @@
+{% extends "base.html" %}
+{% block title %}管理员面板{% endblock %}
+
+{% block body %}
+<h3 class="mb-3">管理员面板</h3>
+
+<div class="d-flex gap-2 mb-3">
+  <a href="{{ url_for('html.logout') }}" class="btn btn-danger">登出</a>
+  <a href="{{ url_for('html.home') }}"   class="btn btn-outline-secondary">返回首页</a>
+  <a href="{{ url_for('html.admin_clear') }}" class="btn btn-warning ms-auto"
+     onclick="return confirm('确定清空整个数据库吗？')">清空数据库</a>
+</div>
+
+<!-- ===== 上传 CSV ===== -->
+<div class="card mb-4">
+  <div class="card-header">批量导入（CSV：code,recipient,phone）</div>
+  <div class="card-body">
+    <form action="{{ url_for('html.admin_import') }}" method="post"
+          enctype="multipart/form-data" class="row g-2">
+      <div class="col-md-9">
+        <input type="file" name="file" accept=".csv" class="form-control" required>
+      </div>
+      <div class="col-md-3 d-grid">
+        <button class="btn btn-success">上传并导入</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- ===== 添加包裹单条 ===== -->
+<div class="card mb-4">
+  <div class="card-header">添加包裹</div>
+  <div class="card-body">
+    <form action="{{ url_for('html.admin_add') }}" method="post" class="row g-2">
+      <div class="col-md-3"><input name="code"  class="form-control" placeholder="单号" required></div>
+      <div class="col-md-3"><input name="rec"   class="form-control" placeholder="收件人" required></div>
+      <div class="col-md-3"><input name="phone" class="form-control" placeholder="手机号" required></div>
+      <div class="col-md-3 d-grid"><button class="btn btn-primary">添加</button></div>
+    </form>
+  </div>
+</div>
+
+<!-- ===== 包裹列表 ===== -->
+<h5 class="mb-2">包裹列表</h5>
+<table class="table table-bordered align-middle mb-5">
+  <thead class="table-light">
+    <tr>
+      <th>ID</th><th>单号</th><th>收件人</th><th>手机号</th>
+      <th>状态</th><th>取件码</th><th>入库时间</th>
+    </tr>
+  </thead>
+  <tbody>
+    {% for p in pkgs %}
+      <tr>
+        <td>{{ p.id }}</td>
+        <td>{{ p.code }}</td>
+        <td>{{ p.recipient }}</td>
+        <td>{{ p.phone }}</td>
+        <td>{{ p.status }}</td>
+        <td>{{ p.pickup_code }}</td>
+        <td>{{ p.in_time or '' }}</td>
+      </tr>
+    {% else %}
+      <tr><td colspan="7" class="text-center">暂无包裹</td></tr>
+    {% endfor %}
+  </tbody>
+</table>
+
+<!-- ===== 用户列表 ===== -->
+<h5 class="mb-2">用户列表</h5>
+<table class="table table-bordered align-middle">
+  <thead class="table-light">
+    <tr><th>#</th><th>手机号</th></tr>
+  </thead>
+  <tbody>
+    {% for u in users %}
+      <tr>
+        <td>{{ loop.index }}</td>
+        <td>{{ u.username }}</td>
+      </tr>
+    {% else %}
+      <tr><td colspan="2" class="text-center">暂无用户</td></tr>
+    {% endfor %}
+  </tbody>
+</table>
+{% endblock %}
