@@ -9,7 +9,10 @@
 
 <table class="table table-bordered align-middle">
   <thead>
-    <tr><th>单号</th><th>收件人</th><th>状态</th><th>取件码</th></tr>
+    <tr>
+      <th>单号</th><th>收件人</th><th>状态</th>
+      <th>取件码</th><th>出库时间</th><th>操作</th>
+    </tr>
   </thead>
   <tbody>
     {% for p in pkgs %}
@@ -18,9 +21,20 @@
         <td>{{ p.recipient }}</td>
         <td>{{ p.status }}</td>
         <td>{{ p.pickup_code }}</td>
+        <td>{{ p.out_time or '' }}</td>
+        <td>
+          {% if p.status == "WAIT" %}
+            <form action="{{ url_for('html.package_pickup') }}" method="post" style="display:inline;">
+              <input type="hidden" name="package_id" value="{{ p.id }}">
+              <button class="btn btn-sm btn-success">一键取件</button>
+            </form>
+          {% else %}
+            已取件
+          {% endif %}
+        </td>
       </tr>
     {% else %}
-      <tr><td colspan="4" class="text-center">暂无包裹</td></tr>
+      <tr><td colspan="6" class="text-center">暂无包裹</td></tr>
     {% endfor %}
   </tbody>
 </table>

@@ -9,6 +9,7 @@ from app.models_user import User
 from app.models import Package, db
 import random, string
 import io, csv
+from datetime import datetime
 
 # 创建 Blueprint 对象，用于注册 HTML 页面相关路由
 html = Blueprint("html", __name__)
@@ -34,6 +35,7 @@ def admin_login():
         u, p = request.form["username"], request.form["password"]
         admin = User.query.filter_by(username=u, role="ADMIN").first()
         if admin and admin.verify_password(p):
+            session.clear()            # 清空旧会话，避免角色冲突
             session["admin"] = admin.id
             return redirect(url_for("html.admin_panel"))
         flash("登录失败")
@@ -135,6 +137,7 @@ def user_login():
         phone, pwd = request.form["phone"], request.form["password"]
         user = User.query.filter_by(username=phone, role="EMP").first()
         if user and user.verify_password(pwd):
+            session.clear()            # 清空旧会话
             session["user"] = phone
             return redirect(url_for("html.user_panel"))
         flash("登录失败")
@@ -178,7 +181,8 @@ def pickup():
         pickup = request.form["pickup"]
         pkg = Package.query.filter_by(code=code, pickup_code=pickup).first()
         if pkg and pkg.status == "WAIT":
-            pkg.status = "OUT"
+            pkg.status   = "OUT"
+            pkg.out_time = datetime.utcnow()   # 记录取件时间
             db.session.commit()
             msg = "取件成功"
         else:
@@ -194,3 +198,33 @@ def logout():
     session.clear()
     flash("登出成功", "success")
     return redirect(url_for("html.home"))
+
+
+# =================== 一键取件通用接口 ===================
+
+@html.route("/package_pickup", methods=["POST"])
+def package_pickup():
+    """
+    管理员 / 用户 一键取件：
+    表单需携带 hidden 字段 package_id
+    """
+    # 权限检查：必须已登录（管理员或用户）
+    is_admin = "admin" in session
+    is_user  = "user"  in session
+    if not (is_admin or is_user):
+        flash("未授权操作", "danger")
+        return redirect(url_for("html.home"))
+
+    pkg_id = request.form.get("package_id")
+    pkg = Package.query.get(pkg_id)
+
+    if pkg and pkg.status == "WAIT":
+        pkg.status   = "OUT"
+        pkg.out_time = datetime.utcnow()
+        db.session.commit()
+        flash(f"包裹 {pkg.code} 取件成功", "success")
+    else:
+        flash("包裹不存在或已取件", "warning")
+
+    # 按登录角色返回对应面板
+    return redirect(url_for("html.admin_panel" if is_admin else "html.user_panel"))

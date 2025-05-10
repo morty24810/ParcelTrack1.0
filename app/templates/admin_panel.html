@@ -46,7 +46,7 @@
   <thead class="table-light">
     <tr>
       <th>ID</th><th>单号</th><th>收件人</th><th>手机号</th>
-      <th>状态</th><th>取件码</th><th>入库时间</th>
+      <th>状态</th><th>取件码</th><th>入库时间</th><th>出库时间</th><th>操作</th>
     </tr>
   </thead>
   <tbody>
@@ -59,9 +59,20 @@
         <td>{{ p.status }}</td>
         <td>{{ p.pickup_code }}</td>
         <td>{{ p.in_time or '' }}</td>
+        <td>{{ p.out_time or '' }}</td>
+        <td>
+          {% if p.status == "WAIT" %}
+            <form action="{{ url_for('html.package_pickup') }}" method="post" style="display:inline;">
+              <input type="hidden" name="package_id" value="{{ p.id }}">
+              <button class="btn btn-sm btn-success">一键取件</button>
+            </form>
+          {% else %}
+            已取件
+          {% endif %}
+        </td>
       </tr>
     {% else %}
-      <tr><td colspan="7" class="text-center">暂无包裹</td></tr>
+      <tr><td colspan="9" class="text-center">暂无包裹</td></tr>
     {% endfor %}
   </tbody>
 </table>
@@ -70,7 +81,7 @@
 <h5 class="mb-2">用户列表</h5>
 <table class="table table-bordered align-middle">
   <thead class="table-light">
-    <tr><th>#</th><th>手机号</th></tr>
+    <tr><th>编号</th><th>手机号</th></tr>
   </thead>
   <tbody>
     {% for u in users %}
