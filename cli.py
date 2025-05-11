@@ -5,7 +5,7 @@ Date   : 2025-05-01
 """
 
 # ---------------- 模块导入 ----------------
-import os, sys, csv, io, warnings, getpass
+import os, sys, csv, warnings, getpass
 from getpass import GetPassWarning
 from datetime import timezone, datetime
 from app import create_app, db
@@ -34,14 +34,20 @@ def gen_pickup(n=6):
     return ''.join(choices(digits, k=n))
 
 def clear_screen():
-    """清空终端屏幕（兼容 Windows / Linux / macOS）"""
+    """
+    清空终端屏幕：
+    - Windows 用 cls
+    - Unix-like 用 clear
+    - 若在 IDE / PyCharm 运行且非 TTY，则简单打印多行空白
+    """
     if os.name == "nt":
         os.system("cls")
     else:
-        if "TERM" in os.environ and sys.stdout.isatty():
+        if sys.stdout.isatty():
             os.system("clear")
         else:
-            print("\033c", end="")
+            # IDE 运行环境下避免打印 \033c 控制符
+            print("\n" * 80)
 
 # ---------------- 主菜单 ----------------
 
@@ -117,6 +123,8 @@ def admin_login():
             yn = input("确定清空数据库?(y/n) ").lower()
             if yn == "y":
                 db.drop_all()
+                db.session.commit()  # 确保 DROP 提交
+                db.session.close()  # <— 新增，清理旧 Session
                 db.create_all()
                 # 重新创建默认管理员
                 if not User.query.filter_by(username="admin").first():
@@ -144,7 +152,7 @@ def import_csv(path):
                 db.session.add(Package(code=code, recipient=rec,
                                        phone=phone, pickup_code=gen_pickup()))
                 count += 1
-            except Exception:
+            except (ValueError, IndexError, csv.Error):
                 fail += 1
     db.session.commit()
     print(f"导入完毕：成功 {count} 条，失败 {fail} 条\n")
