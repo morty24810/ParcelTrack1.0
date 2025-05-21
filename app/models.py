@@ -1,7 +1,7 @@
 """
-快递业务管理系统 · 终端版 CLI
+快递业务管理系统
 Author : 傅懋杰
-Date   : 2025-05-01
+Date   : 2025-05-21
 """
 
 from datetime import datetime, timezone
